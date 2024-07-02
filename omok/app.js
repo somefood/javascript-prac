@@ -72,18 +72,35 @@ let omokGame = new Omok(boardSize, playerType, firstPlayer);
 omokGame.drawBoard(context);
 
 startButton.addEventListener('click', () => {
-  alert(`시작버튼 클랙=> 사이즈 ${boardSize}, 상대선수: ${playerType}, 흑 선수: ${firstPlayer}`)
+  alert(`시작버튼 클랙=> 사이즈 ${boardSize}, 상대선수: ${playerType}, 흑 선수: ${firstPlayer}`);
+  let restartFlag = false;
 
-  // 오목객체 생성(초기화)
-  omokGame = new Omok(boardSize, playerType, firstPlayer);
+  //게임 진행중이면 확인 후 새게임 처리
+  if (omokGame.getOrder() > 0) {
+    if (confirm("게임 진행 중입니다. 다시 시작하겠습니까?")) {
+      restartFlag = true;
+    }
+  } else {
+    restartFlag = true;
+  }
 
-  // 오목판 그리기
-  omokGame.drawBoard(context);
+  if (restartFlag) {
+    //오목객체 생성(초기화)
+    omokGame = new Omok(boardSize, playerType, firstPlayer);
+
+    //컴퓨터가 선수이면 컴퓨터 착수 처리
+
+    //오목판 그리기
+    omokGame.drawBoard(context);
+  }
 });
 
 // 무르기 버튼 이벤트 처리
 undoButton.addEventListener('click', () => {
   alert('무르기버튼 클릭!');
+  if (omokGame.omokFlag[1] || omokGame.omokFlag[2] || omokGame.omokFlag[3] || omokGame.omokFlag[4]) {
+    return;
+  }
 
   // 무르기 처리
   omokGame.undoStone();
@@ -94,6 +111,11 @@ undoButton.addEventListener('click', () => {
 
 // 사람 착수 처리
 canvas.addEventListener('click', e => {
+  //현재 오목이면 return
+  if (omokGame.omokFlag[1] || omokGame.omokFlag[2] || omokGame.omokFlag[3] || omokGame.omokFlag[4]) {
+    return;
+  }
+
   let {omokX, omokY} = omokGame.getOmokPosition(e.layerX, e.layerY);
 
   // 오목판을 벗어나면 return (무시)

@@ -72,6 +72,13 @@ class Omok {
   }
 
   /**
+   * 순서 주기
+   */
+  getOrder() {
+    return this.mainBoard.length;
+  }
+
+  /**
    * 착수 정보 배열을 오목판(15*15 or 19*19) 형태의 2차원 배열로 변환
    */
   makeOmokArray() {
@@ -131,7 +138,7 @@ class Omok {
     }
 
     for (let i = 0; i < this.mainBoard.length; i++) {
-      this.drawStone(ctx, this.mainBoard[i]);
+      this.drawStone(ctx, this.mainBoard[i], i);
     }
   }
 
@@ -193,8 +200,9 @@ class Omok {
    * 오목돌 그리기
    * @param ctx context
    * @param pointInfo 오목돌 그릴 오목 위치
+   * @param orderDisplay 착수 순서 표시 여부
    */
-  drawStone(ctx, pointInfo) {
+  drawStone(ctx, pointInfo, orderDisplay) {
     // 오목돌을 그릴 위치 계산
     let {boardX, boardY} = this.getBoardPosition(pointInfo.x, pointInfo.y);
 
@@ -206,6 +214,23 @@ class Omok {
     ctx.fillStyle = pointInfo.color;
     ctx.arc(boardX, boardY, (this.blockInterval - 2) / 2, 0, Math.PI * 2, false);
     ctx.fill();
+
+    // 착수 순서 표시
+    if (orderDisplay) {
+      pointInfo.color === 'black' ? ctx.fillStyle = 'white' : ctx.fillStyle = 'black';
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'center';
+      ctx.font = '14px verdana';
+      ctx.fillText(pointInfo.order, boardX, boardY);
+    }
+
+    // 마지막 수 표시
+    if (pointInfo.order === this.mainBoard.length) {
+      ctx.save();
+      ctx.strokeStyle = 'red';
+      ctx.strokeRect(boardX - (this.blockInterval / 2), boardY - (this.blockInterval / 2), this.blockInterval, this.blockInterval);
+      ctx.restore();
+    }
   }
 
   /**
