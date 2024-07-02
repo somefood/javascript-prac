@@ -9,6 +9,7 @@ const boardSizeButton = document.getElementsByName('boardsize');
 const playerButton = document.getElementsByName('playertype');
 
 const firstPlayerButton = document.getElementsByName('firstplayer');
+const playSound = new Audio('tak.wav');
 
 let boardSize;
 let playerType;
@@ -72,15 +73,39 @@ omokGame.drawBoard(context);
 
 startButton.addEventListener('click', () => {
   alert(`시작버튼 클랙=> 사이즈 ${boardSize}, 상대선수: ${playerType}, 흑 선수: ${firstPlayer}`)
+
+  // 오목객체 생성(초기화)
+  omokGame = new Omok(boardSize, playerType, firstPlayer);
+
+  // 오목판 그리기
+  omokGame.drawBoard(context);
 });
 
+// 무르기 버튼 이벤트 처리
 undoButton.addEventListener('click', () => {
   alert('무르기버튼 클릭!');
+
+  // 무르기 처리
+  omokGame.undoStone();
+
+  // 오목판 그리기
+  omokGame.drawBoard(context);
 });
 
 // 사람 착수 처리
 canvas.addEventListener('click', e => {
   let {omokX, omokY} = omokGame.getOmokPosition(e.layerX, e.layerY);
+
+  // 오목판을 벗어나면 return (무시)
+  if (omokX < 1 || omokX > boardSize || omokY < 1 || omokY > boardSize) {
+    return;
+  }
+
+  // 클릭 포인트에 이미 돌이 있는 경우 return (무시)
+  if (omokGame.checkOccupied(omokX, omokY)) {
+    return;
+  }
+
   alert(`클릭 위치=> (${e.layerX}, ${e.layerY}) 오목판 위치=> (${omokX}, ${omokY})`);
 
   // 착수정보 저장(추가)
@@ -88,4 +113,7 @@ canvas.addEventListener('click', e => {
 
   // 오목판 그리기
   omokGame.drawBoard(context);
+
+  // 착수 소리 재생
+  playSound.play();
 });

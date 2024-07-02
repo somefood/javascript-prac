@@ -171,4 +171,24 @@ class Omok {
     ctx.arc(boardX, boardY, (this.blockInterval - 2) / 2, 0, Math.PI * 2, false);
     ctx.fill();
   }
+
+  /**
+   * 기 착수 여부 판단
+   * @param omokX
+   * @param omokY
+   */
+  checkOccupied(omokX, omokY) {
+    let filtered = this.mainBoard.filter(point => {
+      return (point.x === omokX) && (point.y === omokY);
+    });
+
+    return filtered.length > 0;
+  }
+
+  /**
+   * 무르기 처리: 마지막에 착수한 착수정보를 삭제
+   */
+  undoStone() {
+    this.mainBoard.pop();
+  }
 }
