@@ -116,4 +116,12 @@ canvas.addEventListener('click', e => {
 
   // 착수 소리 재생
   playSound.play();
+
+  // 오목여부 체크
+  if (omokGame.omokFlag[1] || omokGame.omokFlag[2] || omokGame.omokFlag[3] || omokGame.omokFlag[4]) {
+    setTimeout(() => {
+      alert('오목!!! 다음 게임을 계속하려면 시작버튼을 누르세요.');
+    });
+    return;
+  }
 });

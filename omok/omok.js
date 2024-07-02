@@ -8,6 +8,11 @@ class Omok {
   COM = 'C';
 
   Alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S'];
+  //오목 패턴: 흑은 6목 이상인 경우 금수이므로 만들어지더라도 오목이 아님
+  omokPattern = [
+    ['SBBBBBS', 'SBBBBBW', 'SBBBBBX', 'WBBBBBS', 'WBBBBBW', 'WBBBBBX', 'XBBBBBS', 'XBBBBBW', 'XBBBBBX'],
+    ['WWWWW']
+  ];
 
   boardSize; // 15*15 or 19*19
   playerType = this.HUMAN;
@@ -15,7 +20,18 @@ class Omok {
   blockInterval; // 오목판 격자 간격
 
   // 메인보드정보 배열정의
-  mainBoard = []; // 착수정보 배열
+  // mainBoard = []; // 착수정보 배열
+  mainBoard = new ObservableArray(
+    () => {
+      this.makeOmokArray();
+    },
+    () => {
+      this.makeOmokArray();
+    }
+  );
+
+  omokFlag = [];
+  omokFlagPattern = [];
   boardArray; // 오목판 착수정보 배열
   scoreArray;
 
@@ -53,6 +69,16 @@ class Omok {
 
     // 흑 선수 세팅
     this.firstPlayer = firstPlayer;
+  }
+
+  /**
+   * 착수 정보 배열을 오목판(15*15 or 19*19) 형태의 2차원 배열로 변환
+   */
+  makeOmokArray() {
+    this.boardArray = Array.from(Array(this.boardSize + 1), () => new Array(this.boardSize + 1).fill(''));
+    this.mainBoard.forEach(item => {
+      this.boardArray[item.x][item.y] = item.color;
+    })
   }
 
   drawBoard(ctx) {
@@ -151,6 +177,16 @@ class Omok {
     pointInfo.color = this.getNextColor();
     pointInfo.order = this.mainBoard.length + 1;
     this.mainBoard.push(pointInfo);
+
+    // 착수점 분석: 오목여부 판단
+    // 1번 방향
+    this.analyzePoint(pointInfo, (this.mainBoard[this.mainBoard.length - 1].color === this.BLACK ? 0 : 1), 1, 0, 1);
+    // 2번 방향
+    this.analyzePoint(pointInfo, (this.mainBoard[this.mainBoard.length - 1].color === this.BLACK ? 0 : 1), 0, 1, 2);
+    //3번 방향
+    this.analyzePoint(pointInfo, (this.mainBoard[this.mainBoard.length - 1].color === this.BLACK ? 0 : 1), 1, 1, 3);
+    //4번 방향
+    this.analyzePoint(pointInfo, (this.mainBoard[this.mainBoard.length - 1].color === this.BLACK ? 0 : 1), -1, 1, 4);
   }
 
   /**
@@ -190,5 +226,138 @@ class Omok {
    */
   undoStone() {
     this.mainBoard.pop();
+  }
+
+  /**
+   * 착수정보 추출
+   * @param array 오목판과 동일하게 15*15 또는 19*19 구조의 2차원 배열
+   * @param item 최종적으로 착수한 포인트 객체 (속성: x, y, color, order)
+   * @param dx 가로바향의 증감을 조정하기 위한 변수(1이면 증가, 0이면 고정, -1이면 감소)
+   * @param dy 세로방향의 증감을 조정하기 위한 변수(1이면 증가, 0이면 고정, -1이면 감소)
+   */
+  getStoneInfo(array, item, dx, dy) {
+    let pointX;
+    let pointY;
+    let pos = 0;
+    let getStoneInfo = '';
+    let spaceCount = 0; //연속된 공백 개수
+
+    //멈춤 조건
+    //  1.다른 돌이 있는 경우
+    //  2.오목판을 벗어난 경우
+    //  3.공백인 경우는 연속3개 공백이면 멈춤
+    do {
+      pointX = item.x + pos * dx;
+      pointY = item.y + pos * dy;
+      if (pointX < 1 || pointX > this.boardSize || pointY < 1 || pointY > this.boardSize) {
+        getStoneInfo += 'X';
+        break;
+      }
+      if (array[pointX][pointY] === 'black') {
+        getStoneInfo += 'B';
+        spaceCount = 0;
+        //돌이 바뀌면 멈춤
+        if (array[pointX][pointY] !== item.color) break;
+      } else if (array[pointX][pointY] === 'white') {
+        getStoneInfo += 'W';
+        spaceCount = 0;
+        //돌이 바뀌면 멈춤
+        if (array[pointX][pointY] !== item.color) break;
+      } else {
+        getStoneInfo += 'S';
+        spaceCount++;
+        //연속된 공백수가 3개이면 멈춤
+        if (spaceCount === 3) break;
+      }
+      pos++;
+    } while (pointX >= 1 && pointX <= this.boardSize && pointY >= 1 && pointY <= this.boardSize);
+
+    spaceCount = 0;
+    pos = 1;
+
+    do {
+      pointX = item.x + pos * dx * (-1);
+      pointY = item.y + pos * dy * (-1);
+      if (pointX < 1 || pointX > this.boardSize || pointY < 1 || pointY > this.boardSize) {
+        getStoneInfo = 'X' + getStoneInfo;
+        break;
+      }
+      if (array[pointX][pointY] === 'black') {
+        getStoneInfo = 'B' + getStoneInfo;
+        spaceCount = 0;
+        //돌이 바뀌면 멈춤
+        if (array[pointX][pointY] !== item.color) break;
+      } else if (array[pointX][pointY] === 'white') {
+        getStoneInfo = 'W' + getStoneInfo;
+        spaceCount = 0;
+        //돌이 바뀌면 멈춤
+        if (array[pointX][pointY] !== item.color) break;
+      } else {
+        getStoneInfo = 'S' + getStoneInfo;
+        spaceCount++;
+        //연속된 공백수가 3개이면 멈춤
+        if (spaceCount === 3) break;
+      }
+      pos++;
+    } while (pointX >= 1 && pointX <= this.boardSize && pointY >= 1 && pointY <= this.boardSize);
+
+    return getStoneInfo;
+  }
+
+  /**
+   * 패턴 검색
+   * @param stoneInfo
+   * @param pattern
+   */
+  findPattern(stoneInfo, pattern) {
+    let result = false;
+    pattern.forEach(i => {
+      if (stoneInfo.includes(i)) {
+        result = true;
+      }
+    });
+    return result;
+  }
+
+  /**
+   * 분석 함수
+   * @param pointInfo
+   * @param checkStone
+   * @param dx
+   * @param dy
+   * @param direction
+   */
+  analyzePoint(pointInfo, checkStone, dx, dy, direction) {
+
+    // 패턴 flag 초기화
+    this.omokFlag[direction] = false;
+
+    const pattern = this.getStoneInfo(this.boardArray, pointInfo, dx, dy);
+
+    // 오목 체크
+    if (this.findPattern(pattern, this.omokPattern[checkStone])) {
+      this.omokPattern[direction] = true;
+      this.omokFlagPattern[direction] = pattern;
+      return;
+    }
+  }
+}
+
+class ObservableArray extends Array {
+  constructor(onPush, onPop, ...elements) {
+    super(...elements);
+
+    this.onPush = onPush;
+    this.onPop = onPop;
+  }
+
+  push(...elements) {
+    super.push(...elements);
+    this.onPush?.(this);
+  }
+
+  pop() {
+    super.pop();
+    this.onPop?.(this);
   }
 }
