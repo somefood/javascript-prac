@@ -78,6 +78,14 @@ undoButton.addEventListener('click', () => {
   alert('무르기버튼 클릭!');
 });
 
+// 사람 착수 처리
 canvas.addEventListener('click', e => {
-  alert(`착수=> (${e.layerX}, ${e.layerY})`);
+  let {omokX, omokY} = omokGame.getOmokPosition(e.layerX, e.layerY);
+  alert(`클릭 위치=> (${e.layerX}, ${e.layerY}) 오목판 위치=> (${omokX}, ${omokY})`);
+
+  // 착수정보 저장(추가)
+  omokGame.putStone(omokX, omokY);
+
+  // 오목판 그리기
+  omokGame.drawBoard(context);
 });

@@ -15,11 +15,19 @@ class Omok {
   blockInterval; // 오목판 격자 간격
 
   // 메인보드정보 배열정의
-  mainBoard; // 착수정보 배열
+  mainBoard = []; // 착수정보 배열
   boardArray; // 오목판 착수정보 배열
   scoreArray;
 
   constructor(boardSize, playerType, firstPlayer) {
+
+    this.pointInfo = {
+      x: 0,
+      y: 0,
+      color: "",
+      order: 0
+    };
+
     // 오목판 사이즈 세팅
     this.boardSize = boardSize;
 
@@ -95,6 +103,10 @@ class Omok {
       ctx.font = '12px verdana';
       ctx.fillText(this.Alphabet[i - 1], (i * this.blockInterval), (this.boardSize * this.blockInterval + 9));
     }
+
+    for (let i = 0; i < this.mainBoard.length; i++) {
+      this.drawStone(ctx, this.mainBoard[i]);
+    }
   }
 
   drawDot(x, y) {
@@ -102,5 +114,61 @@ class Omok {
     context.fillStyle = 'black';
     context.arc(x * this.blockInterval, y * this.blockInterval, 3, 0, Math.PI * 2, false);
     context.fill();
+  }
+
+  // 오목판 위치 변환(canvas 위치 -> 오목 위치)
+  // canvas 상의 위치값을 오목판 사이즈에 맞는 오목위치로 변환
+  getOmokPosition(LayerX, LayerY) {
+    return {
+      'omokX': Math.round(LayerY / this.blockInterval),
+      'omokY': Math.round(LayerX / this.blockInterval),
+    };
+  }
+
+  // 오목판 위치 변환 (오목 위치 -> canvas 위치)
+  // 오목돌을 그리기 위해 오목위치값을 canvas 상의 위치값으로 변환
+  getBoardPosition(omokX, omokY) {
+    return {
+      'boardX': omokY * this.blockInterval,
+      'boardY': omokX * this.blockInterval
+    };
+  }
+
+  // 다음 오목돌의 색 구하기
+  getNextColor() {
+    if (this.mainBoard.length === 0) { // 첫 수는 무조건 흑을 줘야함
+      return 'black';
+    } else {
+      return this.mainBoard[this.mainBoard.length - 1].color === 'black' ? 'white' : 'black';
+    }
+  }
+
+  putStone(omokX, omokY) {
+    let pointInfo = Object.create(this.pointInfo);
+
+    pointInfo.x = omokX;
+    pointInfo.y = omokY;
+    pointInfo.color = this.getNextColor();
+    pointInfo.order = this.mainBoard.length + 1;
+    this.mainBoard.push(pointInfo);
+  }
+
+  /**
+   * 오목돌 그리기
+   * @param ctx context
+   * @param pointInfo 오목돌 그릴 오목 위치
+   */
+  drawStone(ctx, pointInfo) {
+    // 오목돌을 그릴 위치 계산
+    let {boardX, boardY} = this.getBoardPosition(pointInfo.x, pointInfo.y);
+
+    // 오목돌 그리기
+    ctx.beginPath();
+    ctx.strokeStyle = 'darkgrey';
+    ctx.arc(boardX, boardY, (this.blockInterval - 2) / 2, 0, Math.PI * 2, false);
+    ctx.stroke();
+    ctx.fillStyle = pointInfo.color;
+    ctx.arc(boardX, boardY, (this.blockInterval - 2) / 2, 0, Math.PI * 2, false);
+    ctx.fill();
   }
 }
