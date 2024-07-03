@@ -72,7 +72,7 @@ let omokGame = new Omok(boardSize, playerType, firstPlayer);
 omokGame.drawBoard(context);
 
 startButton.addEventListener('click', () => {
-  alert(`시작버튼 클랙=> 사이즈 ${boardSize}, 상대선수: ${playerType}, 흑 선수: ${firstPlayer}`);
+  console.log(`시작버튼 클랙=> 사이즈 ${boardSize}, 상대선수: ${playerType}, 흑 선수: ${firstPlayer}`);
   let restartFlag = false;
 
   //게임 진행중이면 확인 후 새게임 처리
@@ -97,7 +97,7 @@ startButton.addEventListener('click', () => {
 
 // 무르기 버튼 이벤트 처리
 undoButton.addEventListener('click', () => {
-  alert('무르기버튼 클릭!');
+  console.log('무르기버튼 클릭!');
   if (omokGame.omokFlag[1] || omokGame.omokFlag[2] || omokGame.omokFlag[3] || omokGame.omokFlag[4]) {
     return;
   }
@@ -113,6 +113,7 @@ undoButton.addEventListener('click', () => {
 canvas.addEventListener('click', e => {
   //현재 오목이면 return
   if (omokGame.omokFlag[1] || omokGame.omokFlag[2] || omokGame.omokFlag[3] || omokGame.omokFlag[4]) {
+    alert('게임이 종료되었습니다. 새로 시작하십시오.');
     return;
   }
 
@@ -120,15 +121,17 @@ canvas.addEventListener('click', e => {
 
   // 오목판을 벗어나면 return (무시)
   if (omokX < 1 || omokX > boardSize || omokY < 1 || omokY > boardSize) {
+    alert('오목판 내에서 클릭해 주십시오.');
     return;
   }
 
   // 클릭 포인트에 이미 돌이 있는 경우 return (무시)
   if (omokGame.checkOccupied(omokX, omokY)) {
+    alert('이미 착수된 지점입니다. 다른 곳을 선택해주십시오.');
     return;
   }
 
-  alert(`클릭 위치=> (${e.layerX}, ${e.layerY}) 오목판 위치=> (${omokX}, ${omokY})`);
+  console.log(`클릭 위치=> (${e.layerX}, ${e.layerY}) 오목판 위치=> (${omokX}, ${omokY})`);
 
   // 착수정보 저장(추가)
   omokGame.putStone(omokX, omokY);

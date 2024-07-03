@@ -186,14 +186,18 @@ class Omok {
     this.mainBoard.push(pointInfo);
 
     // 착수점 분석: 오목여부 판단
-    // 1번 방향
+    // 1번 방향 (가로)
+    console.log('가로 분석');
     this.analyzePoint(pointInfo, (this.mainBoard[this.mainBoard.length - 1].color === this.BLACK ? 0 : 1), 1, 0, 1);
-    // 2번 방향
+    // 2번 방향 (세로)
+    console.log('세로 분석');
     this.analyzePoint(pointInfo, (this.mainBoard[this.mainBoard.length - 1].color === this.BLACK ? 0 : 1), 0, 1, 2);
-    //3번 방향
-    this.analyzePoint(pointInfo, (this.mainBoard[this.mainBoard.length - 1].color === this.BLACK ? 0 : 1), 1, 1, 3);
-    //4번 방향
-    this.analyzePoint(pointInfo, (this.mainBoard[this.mainBoard.length - 1].color === this.BLACK ? 0 : 1), -1, 1, 4);
+    //3번 방향 (좌 대각선)
+    console.log('좌 대각선 분석');
+    this.analyzePoint(pointInfo, (this.mainBoard[this.mainBoard.length - 1].color === this.BLACK ? 0 : 1), -1, 1, 3);
+    //4번 방향 (우 대각선)
+    console.log('우 대각선 분석');
+    this.analyzePoint(pointInfo, (this.mainBoard[this.mainBoard.length - 1].color === this.BLACK ? 0 : 1), 1, 1, 4);
   }
 
   /**
@@ -272,8 +276,9 @@ class Omok {
     //  2.오목판을 벗어난 경우
     //  3.공백인 경우는 연속3개 공백이면 멈춤
     do {
-      pointX = item.x + pos * dx;
-      pointY = item.y + pos * dy;
+      pointX = item.x + pos * dy;
+      pointY = item.y + pos * dx;
+      // console.log('pointX', pointX, 'pointY', pointY);
       if (pointX < 1 || pointX > this.boardSize || pointY < 1 || pointY > this.boardSize) {
         getStoneInfo += 'X';
         break;
@@ -301,8 +306,9 @@ class Omok {
     pos = 1;
 
     do {
-      pointX = item.x + pos * dx * (-1);
-      pointY = item.y + pos * dy * (-1);
+      pointX = item.x + pos * dy * (-1);
+      pointY = item.y + pos * dx * (-1);
+      // console.log('pointX', pointX, 'pointY', pointY);
       if (pointX < 1 || pointX > this.boardSize || pointY < 1 || pointY > this.boardSize) {
         getStoneInfo = 'X' + getStoneInfo;
         break;
@@ -359,9 +365,12 @@ class Omok {
 
     const pattern = this.getStoneInfo(this.boardArray, pointInfo, dx, dy);
 
+    // console.log('분석1', pointInfo, 'checkStone', checkStone, 'dx:', dx, 'dy:', dy, direction);
+    console.log('분석2', pattern);
+
     // 오목 체크
     if (this.findPattern(pattern, this.omokPattern[checkStone])) {
-      this.omokPattern[direction] = true;
+      this.omokFlag[direction] = true;
       this.omokFlagPattern[direction] = pattern;
       return;
     }
