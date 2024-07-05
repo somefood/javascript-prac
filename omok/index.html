@@ -15,6 +15,15 @@
                 <!-- 오목판 -->
             </canvas>
         </div>
+        <div class="chatting-board">
+            채팅 영역
+            <div id="chatting-list">채팅 목록</div>
+            <div class="chatting-message">
+                채팅 메시지
+                <label for="message"></label>
+                <input type="text" name="message" id="message" placeholder="메시지를 입력하세요.">
+            </div>
+        </div>
     </div>
 
     <div class="controlcenter">
@@ -52,6 +61,46 @@
         </div>
     </div>
 
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"
+            integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO"
+            crossorigin="anonymous">
+    </script>
+    <script>
+        const urlSearch = new URLSearchParams(location.search);
+        const roomId = urlSearch.get('roomId');
+        console.log(roomId);
+
+        let socket;
+        const chattingList = document.querySelector('#chatting-list');
+        
+        if (!socket) {
+            socket = io('ws://localhost:9090', {transports: ["websocket"]});
+            socket.emit("join_room", roomId);
+
+            socket.on('welcome', async () => {
+                console.log('welcome 수신');
+            });
+            
+            socket.on('start', () => {
+                console.log('게임 시작');
+            })
+
+            socket.on('chat', async (message) => {
+                console.log('메시지 수신', message);
+                const newChat = document.createElement('div');
+                newChat.innerText = message;
+                chattingList.appendChild(newChat);
+            });
+        }
+        
+        const chatMessage = document.querySelector('#message');
+        chatMessage.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                console.log('데이터 전송');
+                socket.emit('chat', chatMessage.value, 'aa');
+            }
+        })
+    </script>
     <script src="omok.js"></script>
     <script src="app.js"></script>
 </body>

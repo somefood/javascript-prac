@@ -133,14 +133,9 @@ canvas.addEventListener('click', e => {
 
   console.log(`클릭 위치=> (${e.layerX}, ${e.layerY}) 오목판 위치=> (${omokX}, ${omokY})`);
 
-  // 착수정보 저장(추가)
-  omokGame.putStone(omokX, omokY);
-
-  // 오목판 그리기
-  omokGame.drawBoard(context);
-
-  // 착수 소리 재생
-  playSound.play();
+// 착수정보 저장(추가)
+  put(omokX, omokY);
+  socket.emit('put', roomId, {omokX: omokX, omokY: omokY})
 
   // 오목여부 체크
   if (omokGame.omokFlag[1] || omokGame.omokFlag[2] || omokGame.omokFlag[3] || omokGame.omokFlag[4]) {
@@ -150,3 +145,17 @@ canvas.addEventListener('click', e => {
     return;
   }
 });
+
+function put(omokX, omokY) {
+  omokGame.putStone(omokX, omokY);
+
+  // 오목판 그리기
+  omokGame.drawBoard(context);
+
+  // 착수 소리 재생
+  playSound.play();
+}
+
+socket.on('put', position => {
+  put(position.omokX, position.omokY);
+})
