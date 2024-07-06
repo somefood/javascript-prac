@@ -3,9 +3,9 @@ const context = canvas.getContext('2d');
 
 const startButton = document.querySelector('.start');
 const undoButton = document.querySelector('.undo');
+const exitButton = document.querySelector('.exit');
 
 const boardSizeButton = document.getElementsByName('boardsize');
-
 const playerButton = document.getElementsByName('playertype');
 
 const firstPlayerButton = document.getElementsByName('firstplayer');
@@ -109,6 +109,13 @@ undoButton.addEventListener('click', () => {
   omokGame.drawBoard(context);
 });
 
+exitButton.addEventListener('click', () => {
+  const exit = confirm('퇴장하겠습니까?');
+  if (exit) {
+    history.back();
+  }
+})
+
 // 사람 착수 처리
 canvas.addEventListener('click', e => {
   //현재 오목이면 return
@@ -158,4 +165,4 @@ function put(omokX, omokY) {
 
 socket.on('put', position => {
   put(position.omokX, position.omokY);
-})
+});
