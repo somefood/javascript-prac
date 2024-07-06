@@ -12,14 +12,16 @@ function initRoomMaps() {
         guestId: "",
         roomId: "0c8b6d06-e15f-4ee1-9261-7172e1f1f437",
         roomName: "오목 고수만~~",
-        participants: ["10017612", null]
+        participants: ["10017612", "10017676"],
+        status: "playing"
     });
     map.set('10017613', {
         ownerId: "10017613",
         guestId: "",
         roomId: "92315b4d-03f1-4b73-b6ff-4aeea324f626",
         roomName: "오목 초보만~~",
-        participants: ["10017613", null]
+        participants: ["10017613", null],
+        status: "ready"
     })
 
     map.set('10017614', {
@@ -27,7 +29,8 @@ function initRoomMaps() {
         guestId: "",
         roomId: "4516fcf8-b188-409a-ac78-f82cf0860c41",
         roomName: "오목 아무나~@@@",
-        participants: ["10017614", null]
+        participants: ["10017614", null],
+        status: "ready"
     })
 
     map.set('10017615', {
@@ -35,7 +38,8 @@ function initRoomMaps() {
         guestId: "",
         roomId: "2c9d0640-bfd0-4b5b-b084-938dcacc9246",
         roomName: "오목 고수만~~@#@#@#",
-        participants: ["10017615", null]
+        participants: ["10017615", null],
+        status: "ready"
     })
     return map;
 }
@@ -63,9 +67,10 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 app.get('/rooms', (req: Request, res: Response) => {
-    let roomList = Array.from(roomMap, ([name, value]) => ({
-        roomName: value.roomName,
-        roomId: value.roomId
+    let roomList = Array.from(roomMap, ([name, roomInfo]) => ({
+        roomName: roomInfo.roomName,
+        roomId: roomInfo.roomId,
+        status: roomInfo.status
     }));
     return res.json(roomList);
 });
@@ -79,6 +84,7 @@ app.post('/rooms', (req: Request, res: Response) => {
         roomName: roomName,
         roomId: uuidv4(),
         participants: [username, null],
+        status: 'ready'
     }
 
     roomMap.set(username, roomInfo);
@@ -97,7 +103,7 @@ ws.on("connection", (socket) => {
             findRoom.guestId = guestId;
             findRoom.participants[1] = guestId;
             socket.join(roomId);
-            socket.to(roomId).emit("welcome");
+            socket.to(roomId).emit("chat", `${socket.id} 님이 접속했습니다.`);
         }
     });
 
@@ -108,8 +114,8 @@ ws.on("connection", (socket) => {
         });
     })
     
-    socket.on('chat', (message, roomName) => {
-       socket.to(roomName).emit('chat', message); 
+    socket.on('chat', (message, roomId) => {
+       socket.to(roomId).emit('chat', message);
     });
     socket.on("offer", (offer, roomName) => {
         socket.to(roomName).emit("offer", offer);
@@ -119,6 +125,19 @@ ws.on("connection", (socket) => {
     });
     socket.on("ice", (ice, roomName) => {
         socket.to(roomName).emit("ice", ice);
+    });
+
+    // socket.on("disconnect", (reason) => {
+    //     socket.broadcast.emit("chat", `${socket.id} 님의 연결이 끊어졌습니다.`);
+    // });
+
+    socket.on("disconnecting", (reason) => {
+        console.log(reason);
+        for (const room of socket.rooms) {
+            if (room !== socket.id) {
+                socket.to(room).emit('chat', `${socket.id} user has left`);
+            }
+        }
     });
 });
 

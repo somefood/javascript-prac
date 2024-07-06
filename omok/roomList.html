@@ -6,11 +6,11 @@
 </head>
 <body>
 <div class="room-list">
-  
+
 </div>
 <script>
   const roomList = document.querySelector(".room-list");
-  
+
   document.addEventListener('DOMContentLoaded', async () => {
     const response = await fetch('http://localhost:9090/rooms');
     const rooms = await response.json();
@@ -18,11 +18,11 @@
       const div = document.createElement("div");
       const aTag = document.createElement("a");
       aTag.setAttribute("href", `index.html?roomId=${room.roomId}`);
-      aTag.textContent = room.roomName;
+      aTag.textContent = `${room.roomName}, ${room.status}`;
       div.appendChild(aTag);
       roomList.appendChild(div);
     }
-  })
+  });
 </script>
 </body>
 </html>

@@ -16,10 +16,9 @@
             </canvas>
         </div>
         <div class="chatting-board">
-            채팅 영역
-            <div id="chatting-list">채팅 목록</div>
+            <div id="chatting-list"></div>
             <div class="chatting-message">
-                채팅 메시지
+                <span>채팅 메시지</span>
                 <label for="message"></label>
                 <input type="text" name="message" id="message" placeholder="메시지를 입력하세요.">
             </div>
@@ -72,7 +71,7 @@
 
         let socket;
         const chattingList = document.querySelector('#chatting-list');
-        
+
         if (!socket) {
             socket = io('ws://localhost:9090', {transports: ["websocket"]});
             socket.emit("join_room", roomId);
@@ -80,7 +79,7 @@
             socket.on('welcome', async () => {
                 console.log('welcome 수신');
             });
-            
+
             socket.on('start', () => {
                 console.log('게임 시작');
             })
@@ -88,16 +87,26 @@
             socket.on('chat', async (message) => {
                 console.log('메시지 수신', message);
                 const newChat = document.createElement('div');
+                newChat.classList.add('message', 'received');
                 newChat.innerText = message;
                 chattingList.appendChild(newChat);
             });
         }
-        
+
         const chatMessage = document.querySelector('#message');
-        chatMessage.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
+        chatMessage.addEventListener('keydown', ({key, isComposing}) => {
+            if (isComposing) {
+              return;
+            }
+
+            if (key === 'Enter') {
                 console.log('데이터 전송');
-                socket.emit('chat', chatMessage.value, 'aa');
+                const newChat = document.createElement('div');
+                newChat.classList.add('message', 'sent');
+                newChat.innerText = chatMessage.value;
+                chattingList.appendChild(newChat);
+                socket.emit('chat', chatMessage.value, roomId);
+                chatMessage.value = "";
             }
         })
     </script>

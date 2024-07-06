@@ -47,14 +47,62 @@ span {
     border-radius: 5px;
 }
 
+.container {
+    display: flex;
+    width: 1000px;
+}
+
 .main-board {
-    width: 60%;
+    flex: 0 0 60%;
 }
 
 .chatting-board {
-    width: 40%;
-    height: 500px;
-    display:flex;
-    flex-direction: column-reverse;
-    overflow-y:auto;
+    flex: 0 0 40%;
+    background-color: lightcoral; /* 채팅 보드의 배경색 */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#chatting-list {
+    flex: 1;
+    overflow-y: auto; /* 스크롤 지원 */
+    background-color: white; /* 채팅 목록의 배경색 */
+    padding: 10px;
+    margin-bottom: 10px; /* 입력 영역과의 간격 */
+}
+
+.chatting-message {
+    flex: 0 0 10%; /* 높이를 10%로 설정 */
+    display: flex;
+    align-items: center;
+    background-color: white; /* 입력 영역의 배경색 */
+    padding: 10px;
+}
+
+.chatting-message input[type="text"] {
+    flex: 1;
+    padding: 10px;
+    margin-left: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* 채팅 메시지 스타일 */
+.message {
+    margin: 5px 0;
+    padding: 10px;
+    border-radius: 10px;
+    width: 50%; /* 채팅 목록의 절반 너비 */
+    word-wrap: break-word;
+}
+
+.message.sent {
+    background-color: yellow;
+    float: right;
+}
+
+.message.received {
+    background-color: white;
+    float: left;
 }
