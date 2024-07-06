@@ -5,19 +5,15 @@ const startButton = document.querySelector('.start');
 const undoButton = document.querySelector('.undo');
 const exitButton = document.querySelector('.exit');
 
-const boardSizeButton = document.getElementsByName('boardsize');
 const playerButton = document.getElementsByName('playertype');
 
 const firstPlayerButton = document.getElementsByName('firstplayer');
 const playSound = new Audio('tak.wav');
 
-let boardSize;
+let boardSize = 15;
 let playerType;
 let firstPlayer;
 
-// 오목판 사이즈 설정
-if (document.getElementById('size15').checked) boardSize = 15;
-if (document.getElementById('size19').checked) boardSize = 19;
 
 // 상대선수: 사람 설정
 if (document.getElementById('human').checked) {
@@ -35,13 +31,6 @@ if (document.getElementById('com').checked) {
 if (document.getElementById('humanfirst').checked) firstPlayer = 'H';
 if (document.getElementById('comfirst').checked) firstPlayer = 'C';
 
-// 오목판 사이즈 선택 이벤트 처리
-for (let i = 0; i < boardSizeButton.length; i++) {
-  boardSizeButton[i].addEventListener('click', () => {
-    if (boardSizeButton[i].id === 'size15') boardSize = 15;
-    if (boardSizeButton[i].id === 'size19') boardSize = 19;
-  });
-}
 
 // 상대선수 선택 이벤트 처리
 for (let i = 0; i < playerButton.length; i++) {
@@ -162,6 +151,51 @@ function put(omokX, omokY) {
   // 착수 소리 재생
   playSound.play();
 }
+
+const urlSearch = new URLSearchParams(location.search);
+const roomId = urlSearch.get('roomId');
+console.log(roomId);
+
+let socket;
+const chattingList = document.querySelector('#chatting-list');
+
+if (!socket) {
+  socket = io('ws://localhost:9090', {transports: ["websocket"]});
+  socket.emit("join_room", roomId);
+
+  socket.on('welcome', async () => {
+    console.log('welcome 수신');
+  });
+
+  socket.on('start', () => {
+    console.log('게임 시작');
+  })
+
+  socket.on('chat', async (message) => {
+    console.log('메시지 수신', message);
+    const newChat = document.createElement('div');
+    newChat.classList.add('message', 'received');
+    newChat.innerText = message;
+    chattingList.appendChild(newChat);
+  });
+}
+
+const chatMessage = document.querySelector('#message');
+chatMessage.addEventListener('keydown', ({key, isComposing}) => {
+  if (isComposing) {
+    return;
+  }
+
+  if (key === 'Enter') {
+    console.log('데이터 전송');
+    const newChat = document.createElement('div');
+    newChat.classList.add('message', 'sent');
+    newChat.innerText = chatMessage.value;
+    chattingList.appendChild(newChat);
+    socket.emit('chat', chatMessage.value, roomId);
+    chatMessage.value = "";
+  }
+})
 
 socket.on('put', position => {
   put(position.omokX, position.omokY);

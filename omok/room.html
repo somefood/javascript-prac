@@ -26,14 +26,6 @@
     </div>
 
     <div class="controlcenter">
-        <div class="boardsize">
-            <!-- 오목판 사이즈 선택 영역 -->
-            <span>오목판 사이즈</span>
-            <input type="radio" name="boardsize" id="size15" checked>
-            <label for="size15">15*15</label>
-            <input type="radio" name="boardsize" id="size19">
-            <label for="size19">19*19</label>
-        </div>
 
         <div class="playertype">
             <!-- 상대 선수 선택 영역 -->
@@ -64,52 +56,6 @@
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"
             integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO"
             crossorigin="anonymous">
-    </script>
-    <script>
-        const urlSearch = new URLSearchParams(location.search);
-        const roomId = urlSearch.get('roomId');
-        console.log(roomId);
-
-        let socket;
-        const chattingList = document.querySelector('#chatting-list');
-
-        if (!socket) {
-            socket = io('ws://localhost:9090', {transports: ["websocket"]});
-            socket.emit("join_room", roomId);
-
-            socket.on('welcome', async () => {
-                console.log('welcome 수신');
-            });
-
-            socket.on('start', () => {
-                console.log('게임 시작');
-            })
-
-            socket.on('chat', async (message) => {
-                console.log('메시지 수신', message);
-                const newChat = document.createElement('div');
-                newChat.classList.add('message', 'received');
-                newChat.innerText = message;
-                chattingList.appendChild(newChat);
-            });
-        }
-
-        const chatMessage = document.querySelector('#message');
-        chatMessage.addEventListener('keydown', ({key, isComposing}) => {
-            if (isComposing) {
-              return;
-            }
-
-            if (key === 'Enter') {
-                console.log('데이터 전송');
-                const newChat = document.createElement('div');
-                newChat.classList.add('message', 'sent');
-                newChat.innerText = chatMessage.value;
-                chattingList.appendChild(newChat);
-                socket.emit('chat', chatMessage.value, roomId);
-                chatMessage.value = "";
-            }
-        })
     </script>
     <script src="omok.js"></script>
     <script src="app.js"></script>
