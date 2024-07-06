@@ -1,9 +1,13 @@
+let socket;
 const canvas = document.querySelector('.canvas');
 const context = canvas.getContext('2d');
 
 const startButton = document.querySelector('.start');
 const undoButton = document.querySelector('.undo');
 const exitButton = document.querySelector('.exit');
+
+const urlSearch = new URLSearchParams(location.search);
+const roomId = urlSearch.get('roomId');
 
 const playerButton = document.getElementsByName('playertype');
 
@@ -14,6 +18,33 @@ let boardSize = 15;
 let playerType;
 let firstPlayer;
 
+function initSocket(roomId) {
+  if (!socket) {
+    socket = io('ws://localhost:9090', {transports: ["websocket"]});
+    socket.emit("join_room", roomId);
+
+    socket.on('start', () => {
+      console.log('게임 시작');
+    })
+
+    socket.on('chat', async (message) => {
+      const newChat = document.createElement('div');
+      newChat.classList.add('message', 'received');
+      newChat.innerText = message;
+      chattingList.appendChild(newChat);
+    });
+
+    socket.on('put', position => {
+      put(position.omokX, position.omokY);
+    });
+  }
+}
+
+function initOmokGame(boardSize, playerType, firstPlayer) {
+  const omok = new Omok(boardSize, playerType, firstPlayer);
+  omok.drawBoard(context);
+  return omok;
+}
 
 // 상대선수: 사람 설정
 if (document.getElementById('human').checked) {
@@ -53,12 +84,6 @@ for (let i = 0; i < firstPlayerButton.length; i++) {
     if (firstPlayerButton[i].id === 'comfirst') firstPlayer = 'C';
   });
 }
-
-// 오목 객체 생성
-let omokGame = new Omok(boardSize, playerType, firstPlayer);
-
-// 오목판 그리기
-omokGame.drawBoard(context);
 
 startButton.addEventListener('click', () => {
   console.log(`시작버튼 클랙=> 사이즈 ${boardSize}, 상대선수: ${playerType}, 흑 선수: ${firstPlayer}`);
@@ -152,33 +177,7 @@ function put(omokX, omokY) {
   playSound.play();
 }
 
-const urlSearch = new URLSearchParams(location.search);
-const roomId = urlSearch.get('roomId');
-console.log(roomId);
-
-let socket;
 const chattingList = document.querySelector('#chatting-list');
-
-if (!socket) {
-  socket = io('ws://localhost:9090', {transports: ["websocket"]});
-  socket.emit("join_room", roomId);
-
-  socket.on('welcome', async () => {
-    console.log('welcome 수신');
-  });
-
-  socket.on('start', () => {
-    console.log('게임 시작');
-  })
-
-  socket.on('chat', async (message) => {
-    console.log('메시지 수신', message);
-    const newChat = document.createElement('div');
-    newChat.classList.add('message', 'received');
-    newChat.innerText = message;
-    chattingList.appendChild(newChat);
-  });
-}
 
 const chatMessage = document.querySelector('#message');
 chatMessage.addEventListener('keydown', ({key, isComposing}) => {
@@ -195,8 +194,9 @@ chatMessage.addEventListener('keydown', ({key, isComposing}) => {
     socket.emit('chat', chatMessage.value, roomId);
     chatMessage.value = "";
   }
-})
-
-socket.on('put', position => {
-  put(position.omokX, position.omokY);
 });
+
+// 소켓 생성
+initSocket(roomId);
+// 오목 객체 생성
+let omokGame = initOmokGame(boardSize, playerType, firstPlayer);
