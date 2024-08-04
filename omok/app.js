@@ -1,6 +1,7 @@
 let socket;
 const canvas = document.querySelector('.canvas');
 const context = canvas.getContext('2d');
+const roomInfo = document.querySelector('.room-info');
 
 const startButton = document.querySelector('.start');
 const undoButton = document.querySelector('.undo');
@@ -38,6 +39,14 @@ function initSocket(roomId) {
       put(position.omokX, position.omokY);
     });
   }
+}
+
+async function initRoomInfo(roomId) {
+  const response = await fetch(`http://localhost:9090/rooms/${roomId}`);
+  const roomInfo = await response.json();
+  console.log(roomInfo);
+  const roomName = document.querySelector('.room-name');
+  roomName.textContent = roomInfo.roomName;
 }
 
 function initOmokGame(boardSize, playerType, firstPlayer) {
@@ -138,7 +147,7 @@ canvas.addEventListener('click', e => {
     return;
   }
 
-  let {omokX, omokY} = omokGame.getOmokPosition(e.layerX, e.layerY);
+  let {omokX, omokY} = omokGame.getOmokPosition(e.layerX, e.layerY - roomInfo.clientHeight);
 
   // 오목판을 벗어나면 return (무시)
   if (omokX < 1 || omokX > boardSize || omokY < 1 || omokY > boardSize) {
@@ -195,6 +204,8 @@ chatMessage.addEventListener('keydown', ({key, isComposing}) => {
     chatMessage.value = "";
   }
 });
+
+initRoomInfo(roomId);
 
 // 소켓 생성
 initSocket(roomId);

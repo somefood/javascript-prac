@@ -47,6 +47,10 @@ span {
     border-radius: 5px;
 }
 
+.room-info {
+    height: 50px;
+}
+
 .container {
     display: flex;
     width: 1000px;

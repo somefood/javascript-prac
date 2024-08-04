@@ -44,7 +44,7 @@ function initRoomMaps() {
     return map;
 }
 
-function findRoomInfoByName(roomId: string): RoomInfo | null {
+function findRoomInfoById(roomId: string): RoomInfo | null {
     for (let [key, roomInfo] of roomMap) {
         if(roomInfo.roomId === roomId) {
             return roomInfo;
@@ -65,6 +65,12 @@ const port = 9090;
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello World');
 });
+
+app.get('/rooms/:roomId', (req: Request, res: Response) => {
+    const {roomId} = req.params;
+    const roomInfo = findRoomInfoById(roomId);
+    return res.status(200).json(roomInfo);
+})
 
 app.get('/rooms', (req: Request, res: Response) => {
     let roomList = Array.from(roomMap, ([name, roomInfo]) => ({
@@ -98,7 +104,7 @@ const ws = new Server(httpServer);
 ws.on("connection", (socket) => {
     socket.on("join_room", (roomId, guestId) => {
         console.log(roomId);
-        let findRoom = findRoomInfoByName(roomId);
+        let findRoom = findRoomInfoById(roomId);
         if (findRoom) {
             findRoom.guestId = guestId;
             findRoom.participants[1] = guestId;
